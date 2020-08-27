@@ -1,0 +1,58 @@
+version: 2.1
+orbs:
+  node: circleci/node@1.1.6
+
+defaults: &defaults
+  parameters:
+    node_version:
+      type: string
+      default: ""
+  working_directory: ~/repo
+
+commands:
+  install_node_npm:
+    description: Install correct Node version
+    parameters:
+      node_version:
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Install correct version of Node
+          command: nvm install << parameters.node_version >>
+      - run:
+          name: Use correct version of Node
+          command: nvm use << parameters.node_version >>
+
+jobs:
+  common:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run: npm install
+
+  build-and-test-linux:
+    <<: *defaults
+    docker:
+      - image: circleci/node:<< parameters.node_version >>
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run: npm install
+            # - run: npm test
+
+workflows:
+    build-and-test:
+      jobs:
+        - common
+        - build-and-test-linux:
+            name: Linux Tests for Node v12 support
+            node_version: "12"
+            requires:
+              - common
