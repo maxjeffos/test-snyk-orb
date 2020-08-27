@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   node: circleci/node@1.1.6
+  snyk: snyk/snyk@0.0.10
 
 defaults: &defaults
   parameters:
@@ -45,7 +46,8 @@ jobs:
       - node/with-cache:
           steps:
             - run: npm install
-            # - run: npm test
+            - run: echo "about to test with snyk"
+            - snyk/scan
 
 workflows:
     build-and-test:
